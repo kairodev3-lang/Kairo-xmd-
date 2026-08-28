@@ -1,0 +1,1028 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>KAIRO XMD · Pairing</title>
+    <link rel="icon" href="https://files.catbox.moe/xldskt.jpg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <style>
+        /* ===== ROOT – VERT (échelle réduite) ===== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        :root {
+            --bg-deep: #05100b;
+            --bg-panel: #0a1a13;
+            --bg-panel-2: #0e261d;
+            --green: #34d399;
+            --green-bright: #6ee7b7;
+            --green-dim: #10b981;
+            --green-glow: rgba(52, 211, 153, 0.45);
+            --ink: #e6f4ee;
+            --ink-dim: #8aa3a0;
+            --line: rgba(52, 211, 153, 0.16);
+            --success: #34d399;
+            --danger: #f87171;
+            --font-display: 'Orbitron', sans-serif;
+            --font-body: 'Space Grotesk', sans-serif;
+        }
+        html,
+        body {
+            height: 100%;
+            font-family: var(--font-body);
+            color: var(--ink);
+            background-color: var(--bg-deep);
+            overflow-x: hidden;
+        }
+        body {
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* ===== BACKGROUND ===== */
+        .grid-bg {
+            position: fixed;
+            inset: 0;
+            z-index: -2;
+            background-color: var(--bg-deep);
+            background-image:
+                linear-gradient(rgba(52, 211, 153, .10) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(52, 211, 153, .10) 1px, transparent 1px),
+                linear-gradient(rgba(52, 211, 153, .045) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(52, 211, 153, .045) 1px, transparent 1px);
+            background-size: 70px 70px, 70px 70px, 14px 14px, 14px 14px;
+            animation: drift 22s linear infinite;
+        }
+        @keyframes drift {
+            0% {
+                background-position: 0 0, 0 0, 0 0, 0 0;
+            }
+            100% {
+                background-position: 70px 70px, 70px 70px, 14px 14px, 14px 14px;
+            }
+        }
+        .vignette {
+            position: fixed;
+            inset: 0;
+            z-index: -1;
+            pointer-events: none;
+            background:
+                radial-gradient(ellipse 700px 400px at 15% -5%, rgba(52, 211, 153, .22), transparent 60%),
+                radial-gradient(circle at center, transparent 30%, var(--bg-deep) 92%);
+        }
+
+        /* ===== TOPBAR ===== */
+        .topbar {
+            display: flex;
+            align-items: center;
+            padding: 10px 16px;
+            border-bottom: 1px solid var(--line);
+            background: rgba(5, 16, 11, .55);
+            backdrop-filter: blur(10px);
+            position: sticky;
+            top: 0;
+            z-index: 60;
+            gap: 12px;
+        }
+        .hamburger {
+            background: none;
+            border: none;
+            color: var(--green-bright);
+            font-size: 24px;
+            cursor: pointer;
+            padding: 2px 6px;
+            transition: transform 0.2s;
+            line-height: 1;
+        }
+        .hamburger:hover {
+            transform: scale(1.1);
+        }
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+            color: var(--ink);
+            flex: 1;
+        }
+        .brand img {
+            width: 34px;
+            height: 34px;
+            border-radius: 8px;
+            object-fit: cover;
+            border: 1.5px solid var(--green);
+            box-shadow: 0 0 12px var(--green-glow);
+        }
+        .brand-name {
+            font-family: var(--font-display);
+            font-weight: 700;
+            font-size: 14px;
+            letter-spacing: 1.2px;
+            line-height: 1.2;
+        }
+        .brand-name small {
+            display: block;
+            font-family: var(--font-body);
+            font-weight: 400;
+            font-size: 9px;
+            letter-spacing: 1.5px;
+            color: var(--ink-dim);
+            text-transform: uppercase;
+        }
+        .topbar-right {
+            width: 40px;
+        }
+
+        /* ===== DRAWER ===== */
+        .drawer-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 70;
+            background: rgba(0, 0, 0, 0.6);
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+        .drawer-overlay.open {
+            opacity: 1;
+            visibility: visible;
+        }
+        .drawer {
+            position: fixed;
+            top: 0;
+            left: -260px;
+            width: 240px;
+            height: 100%;
+            background: var(--bg-panel);
+            border-right: 1px solid var(--line);
+            z-index: 80;
+            padding: 70px 16px 20px;
+            transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 4px 0 30px rgba(0, 0, 0, 0.5);
+            overflow-y: auto;
+        }
+        .drawer.open {
+            left: 0;
+        }
+        .drawer .close-btn {
+            position: absolute;
+            top: 14px;
+            right: 14px;
+            background: none;
+            border: none;
+            color: var(--ink-dim);
+            font-size: 24px;
+            cursor: pointer;
+        }
+        .drawer .close-btn:hover {
+            color: var(--green-bright);
+        }
+        .drawer .drawer-brand {
+            font-family: var(--font-display);
+            font-weight: 700;
+            font-size: 16px;
+            color: var(--green-bright);
+            margin-bottom: 24px;
+            letter-spacing: 1.2px;
+            border-bottom: 1px solid var(--line);
+            padding-bottom: 12px;
+        }
+        .drawer-nav {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        .drawer-nav a {
+            display: block;
+            padding: 10px 14px;
+            border-radius: 8px;
+            color: var(--ink-dim);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 14px;
+            transition: background 0.2s, color 0.2s;
+            border-left: 3px solid transparent;
+        }
+        .drawer-nav a:hover {
+            background: rgba(52, 211, 153, 0.08);
+            color: var(--green-bright);
+            border-left-color: var(--green);
+        }
+        .drawer-nav a.active {
+            background: rgba(52, 211, 153, 0.12);
+            color: var(--green-bright);
+            border-left-color: var(--green);
+            font-weight: 600;
+        }
+
+        /* ===== MAIN ===== */
+        main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px 16px 16px;
+            width: 100%;
+        }
+        .eyebrow {
+            font-size: 10px;
+            font-weight: 600;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: var(--green-bright);
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .eyebrow::before,
+        .eyebrow::after {
+            content: '';
+            width: 20px;
+            height: 1px;
+            background: var(--green-dim);
+            opacity: .6;
+        }
+        h1.hero {
+            font-family: var(--font-display);
+            font-weight: 900;
+            font-size: clamp(20px, 4vw, 30px);
+            text-align: center;
+            background: linear-gradient(180deg, #fff 10%, var(--green-bright) 60%, var(--green-dim) 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin-bottom: 4px;
+        }
+        .hero-sub {
+            text-align: center;
+            color: var(--ink-dim);
+            font-size: 12px;
+            max-width: 440px;
+            line-height: 1.5;
+            margin-bottom: 20px;
+        }
+
+        /* ===== PANEL ===== */
+        .panel {
+            width: 100%;
+            max-width: 400px;
+            background: linear-gradient(180deg, var(--bg-panel), var(--bg-panel-2));
+            border: 1px solid var(--line);
+            border-radius: 16px;
+            padding: 20px 18px;
+            box-shadow: 0 12px 40px rgba(0, 0, 0, .45);
+            position: relative;
+        }
+        .panel::before {
+            content: '';
+            position: absolute;
+            top: -1px;
+            left: 18px;
+            right: 18px;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--green-bright), transparent);
+            opacity: .7;
+        }
+        .panel-page {
+            display: none;
+            animation: fade 0.25s ease;
+        }
+        .panel-page.active {
+            display: block;
+        }
+        @keyframes fade {
+            0% {
+                opacity: 0.3;
+                transform: translateY(6px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* ===== FORMULAIRES ===== */
+        .field-label {
+            display: block;
+            font-size: 10px;
+            letter-spacing: 0.8px;
+            text-transform: uppercase;
+            color: var(--ink-dim);
+            margin-bottom: 6px;
+        }
+        input[type="tel"] {
+            width: 100%;
+            padding: 10px 14px;
+            border-radius: 10px;
+            border: 1px solid var(--line);
+            background: var(--bg-deep);
+            color: var(--ink);
+            font-family: var(--font-body);
+            font-size: 14px;
+            outline: none;
+            transition: border-color .18s, box-shadow .18s;
+        }
+        input[type="tel"]:focus {
+            border-color: var(--green);
+            box-shadow: 0 0 0 2px rgba(52, 211, 153, .18);
+        }
+        .hint {
+            font-size: 11px;
+            color: var(--ink-dim);
+            margin-top: 6px;
+            line-height: 1.4;
+        }
+        .btn-stack {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 14px;
+        }
+        .btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            width: 100%;
+            padding: 10px 16px;
+            border-radius: 10px;
+            border: 1px solid var(--line);
+            background: var(--bg-panel);
+            color: var(--ink);
+            font-family: var(--font-body);
+            font-weight: 600;
+            font-size: 13px;
+            cursor: pointer;
+            transition: transform .18s, box-shadow .18s, border-color .18s;
+        }
+        .btn:hover {
+            transform: translateY(-1px);
+            border-color: var(--green);
+            box-shadow: 0 8px 20px rgba(52, 211, 153, .18);
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, var(--green-dim), #059669);
+            border-color: transparent;
+            color: #04101f;
+            font-weight: 700;
+            box-shadow: 0 8px 24px rgba(52, 211, 153, .35);
+        }
+        .btn-ghost {
+            background: transparent;
+        }
+        .spinner {
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255, 255, 255, .25);
+            border-top-color: #04101f;
+            border-radius: 50%;
+            animation: spin .7s linear infinite;
+            display: none;
+        }
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* code display */
+        .code-display {
+            display: flex;
+            justify-content: center;
+            gap: 6px;
+            margin: 14px 0 4px;
+            flex-wrap: wrap;
+        }
+        .code-char {
+            width: 32px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: var(--font-display);
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--green-bright);
+            background: var(--bg-deep);
+            border: 1px solid var(--green-dim);
+            border-radius: 8px;
+            box-shadow: 0 0 12px var(--green-glow);
+        }
+        .step-list {
+            margin-top: 16px;
+            padding-top: 14px;
+            border-top: 1px solid var(--line);
+            font-size: 11.5px;
+            color: var(--ink-dim);
+            line-height: 1.8;
+        }
+        .step-list b {
+            color: var(--ink);
+        }
+
+        /* ===== QR PAGE ===== */
+        .qr-placeholder {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            padding: 14px 0 8px;
+        }
+        .qr-box {
+            width: 140px;
+            height: 140px;
+            background: #fff;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 30px rgba(52, 211, 153, .25);
+            border: 2px solid var(--green-dim);
+        }
+        .qr-box img {
+            width: 120px;
+            height: 120px;
+            image-rendering: pixelated;
+        }
+        .qr-hint {
+            font-size: 11px;
+            color: var(--ink-dim);
+            text-align: center;
+        }
+
+        /* ===== COMMANDS PAGE ===== */
+        .cmd-list {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            margin-top: 6px;
+        }
+        .cmd-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 12px;
+            background: var(--bg-deep);
+            border-radius: 8px;
+            border-left: 3px solid var(--green-dim);
+            font-size: 13px;
+            color: var(--ink);
+        }
+        .cmd-item .prefix {
+            font-family: var(--font-display);
+            color: var(--green-bright);
+            font-weight: 700;
+            font-size: 12px;
+            min-width: 50px;
+        }
+        .cmd-item .desc {
+            color: var(--ink-dim);
+            font-size: 12px;
+        }
+
+        /* ===== MENU PAGE ===== */
+        .menu-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin: 10px 0;
+        }
+        .menu-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 14px;
+            background: var(--bg-deep);
+            border-radius: 10px;
+            border-left: 3px solid var(--green);
+            color: var(--ink);
+            text-decoration: none;
+            transition: background 0.2s;
+            cursor: pointer;
+        }
+        .menu-item:hover {
+            background: rgba(52, 211, 153, 0.08);
+        }
+        .menu-item .icon {
+            font-size: 18px;
+        }
+        .menu-item .info {
+            display: flex;
+            flex-direction: column;
+        }
+        .menu-item .info .title {
+            font-weight: 600;
+            font-size: 14px;
+        }
+        .menu-item .info .desc {
+            font-size: 11px;
+            color: var(--ink-dim);
+        }
+
+        /* ===== FOOTER ===== */
+        footer.site-footer {
+            text-align: center;
+            padding: 16px 16px 20px;
+            color: var(--ink-dim);
+            font-size: 10px;
+            border-top: 1px solid var(--line);
+            background: rgba(5, 16, 11, .5);
+            margin-top: 14px;
+        }
+        footer .made {
+            font-family: var(--font-display);
+            font-size: 10px;
+            font-weight: 700;
+            color: var(--green-bright);
+            letter-spacing: 1.5px;
+        }
+
+        /* ===== AUDIO TOGGLE ===== */
+        .audio-toggle {
+            position: fixed;
+            bottom: 16px;
+            right: 16px;
+            z-index: 90;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--green-dim), #059669);
+            border: 1px solid rgba(255, 255, 255, .25);
+            box-shadow: 0 8px 24px rgba(52, 211, 153, .4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: transform .2s;
+        }
+        .audio-toggle:hover {
+            transform: scale(1.08);
+        }
+        .audio-toggle.muted {
+            background: var(--bg-panel);
+            border-color: var(--line);
+            box-shadow: none;
+        }
+        .audio-bars {
+            display: flex;
+            align-items: flex-end;
+            gap: 2px;
+            height: 12px;
+        }
+        .audio-bars span {
+            width: 3px;
+            background: #04101f;
+            border-radius: 2px;
+            animation: barBounce .9s infinite ease-in-out;
+        }
+        .audio-bars span:nth-child(1) {
+            height: 40%;
+        }
+        .audio-bars span:nth-child(2) {
+            height: 100%;
+            animation-delay: .15s;
+        }
+        .audio-bars span:nth-child(3) {
+            height: 65%;
+            animation-delay: .3s;
+        }
+        .audio-toggle.muted .audio-bars span {
+            animation-play-state: paused;
+            background: var(--ink-dim);
+            height: 30% !important;
+        }
+        @keyframes barBounce {
+            0%,
+            100% {
+                transform: scaleY(.4);
+            }
+            50% {
+                transform: scaleY(1);
+            }
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 500px) {
+            .topbar {
+                padding: 8px 12px;
+            }
+            .brand-name {
+                font-size: 12px;
+            }
+            .brand img {
+                width: 30px;
+                height: 30px;
+            }
+            .panel {
+                padding: 16px 14px;
+            }
+            .drawer {
+                width: 220px;
+                left: -220px;
+            }
+            .code-char {
+                width: 28px;
+                height: 34px;
+                font-size: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ===== BACKGROUND ===== -->
+    <div class="grid-bg"></div>
+    <div class="vignette"></div>
+
+    <!-- ===== TOPBAR ===== -->
+    <header class="topbar">
+        <button class="hamburger" id="hamburgerBtn" aria-label="Ouvrir le menu">☰</button>
+        <a href="/" class="brand">
+            <img src="https://files.catbox.moe/0tdukc.jpg" alt="Logo" />
+            <span class="brand-name">KAIRO XMD<small>WhatsApp Bot</small></span>
+        </a>
+        <div class="topbar-right"></div>
+    </header>
+
+    <!-- ===== DRAWER ===== -->
+    <div class="drawer-overlay" id="drawerOverlay"></div>
+    <nav class="drawer" id="drawer" role="navigation">
+        <button class="close-btn" id="drawerCloseBtn">✕</button>
+        <div class="drawer-brand">⚡ KAIRO XMD</div>
+        <div class="drawer-nav">
+            <a href="#" data-page="pairing" class="active">Pairing</a>
+            <a href="#" data-page="menu">Menu</a>
+            <a href="#" data-page="commands">Commands</a>
+        </div>
+    </nav>
+
+    <!-- ===== MAIN ===== -->
+    <main>
+        <p class="eyebrow">CONNEXION SÉCURISÉE</p>
+        <h1 class="hero">KAIRO XMD</h1>
+        <p class="hero-sub">Connectez votre instance WhatsApp via notre passerelle sécurisée.</p>
+
+        <!-- ===== PANEL ===== -->
+        <div class="panel">
+
+            <!-- PAGE PAIRING (active par défaut) -->
+            <div class="panel-page active" id="page-pairing">
+                <h2 style="font-family:var(--font-display); font-size:16px; color:var(--green-bright); text-align:center; margin-bottom:10px;">🔗 Pairing</h2>
+                <div id="formStep">
+                    <label class="field-label" for="phone">Numéro WhatsApp (international)</label>
+                    <input type="tel" id="phone" placeholder="Ex: 33612345678" autocomplete="tel" />
+                    <p class="hint">Indicatif pays + numéro, sans le « + » ni espaces.</p>
+                    <div class="btn-stack">
+                        <button class="btn btn-primary" id="generateBtn">
+                            <span>🔗</span>
+                            <span id="btnLabel">Générer mon code</span>
+                            <span class="spinner" id="spinner"></span>
+                        </button>
+                    </div>
+                </div>
+
+                <div id="codeStep" style="display:none; text-align:center;">
+                    <p class="hint" style="margin-bottom:4px;">Ton code de jumelage :</p>
+                    <div class="code-display" id="codeDisplay"></div>
+                    <p class="hint">Valide 48 secondes. Entre-le dans WhatsApp → Paramètres → Appareils connectés.</p>
+                    <div class="btn-stack">
+                        <button class="btn btn-ghost" id="regenBtn">↻ Nouveau code</button>
+                    </div>
+                </div>
+
+                <div class="step-list">
+                    <b>1.</b> Ouvre WhatsApp → Paramètres → Appareils connectés<br />
+                    <b>2.</b> Touche « Connecter un appareil »<br />
+                    <b>3.</b> Choisis « Connecter avec un numéro de téléphone »<br />
+                    <b>4.</b> Entre le code affiché ci-dessus
+                </div>
+                <div style="margin-top:10px; text-align:center;">
+                    <button class="btn btn-ghost" id="showQrBtn" style="display:inline-flex; width:auto; padding:8px 16px; font-size:12px;">📷 Voir le QR Code</button>
+                </div>
+            </div>
+
+            <!-- PAGE MENU -->
+            <div class="panel-page" id="page-menu">
+                <h2 style="font-family:var(--font-display); font-size:16px; color:var(--green-bright); text-align:center; margin-bottom:6px;">📋 Menu</h2>
+                <p style="text-align:center; color:var(--ink-dim); font-size:11px;">Accès rapide aux fonctionnalités</p>
+                <div class="menu-grid">
+                    <a href="#" class="menu-item" data-page="pairing">
+                        <span class="icon">🔗</span>
+                        <span class="info">
+                            <span class="title">Pairing</span>
+                            <span class="desc">Générer un code de jumelage</span>
+                        </span>
+                    </a>
+                    <a href="#" class="menu-item" data-page="commands">
+                        <span class="icon">⌨️</span>
+                        <span class="info">
+                            <span class="title">Commandes</span>
+                            <span class="desc">Voir toutes les commandes</span>
+                        </span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- PAGE COMMANDS -->
+            <div class="panel-page" id="page-commands">
+                <h2 style="font-family:var(--font-display); font-size:16px; color:var(--green-bright); text-align:center; margin-bottom:10px;">⌨️ Commandes</h2>
+                <p style="font-size:12px; color:var(--ink-dim); margin-bottom:10px;">Commandes disponibles :</p>
+                <div class="cmd-list">
+                    <div class="cmd-item"><span class="prefix">.ping</span><span class="desc">Vérifier la latence du bot</span></div>
+                    <div class="cmd-item"><span class="prefix">.sticker</span><span class="desc">Convertir une image en sticker</span></div>
+                    <div class="cmd-item"><span class="prefix">.gpt</span><span class="desc">Interroger l'IA (texte ou image)</span></div>
+                    <div class="cmd-item"><span class="prefix">.play</span><span class="desc">Télécharger un audio depuis YouTube</span></div>
+                    <div class="cmd-item"><span class="prefix">.img</span><span class="desc">Générer une image par IA</span></div>
+                    <div class="cmd-item"><span class="prefix">.help</span><span class="desc">Afficher toutes les commandes</span></div>
+                </div>
+                <p style="margin-top:14px; font-size:11px; color:var(--ink-dim); text-align:center;">
+                    ⚡ Premium Access &amp; Direct Link activés
+                </p>
+            </div>
+
+            <!-- PAGE QR (cachée, accessible depuis Pairing) -->
+            <div class="panel-page" id="page-qr">
+                <h2 style="font-family:var(--font-display); font-size:16px; color:var(--green-bright); text-align:center; margin-bottom:10px;">📷 QR Code</h2>
+                <div class="qr-placeholder">
+                    <div class="qr-box">
+                        <img src="https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=kairo-xmd-pairing" alt="QR Code" />
+                    </div>
+                    <p class="qr-hint">Scanne ce QR code avec WhatsApp pour connecter ton appareil.</p>
+                    <p class="qr-hint" style="font-size:10px; color:var(--ink-dim);">(Code généré à la demande)</p>
+                    <button class="btn btn-ghost" id="refreshQrBtn" style="margin-top:6px; padding:8px 14px; font-size:12px;">⟳ Rafraîchir le QR</button>
+                    <button class="btn btn-ghost" id="backFromQrBtn" style="margin-top:6px; padding:8px 14px; font-size:12px;">← Retour au Pairing</button>
+                </div>
+                <div class="step-list">
+                    <b>1.</b> Ouvre WhatsApp → Paramètres → Appareils connectés<br />
+                    <b>2.</b> Touche « Connecter un appareil »<br />
+                    <b>3.</b> Choisis « Scanner un QR code »<br />
+                    <b>4.</b> Scanne le code ci-dessus
+                </div>
+            </div>
+
+        </div><!-- /panel -->
+    </main>
+
+    <!-- ===== FOOTER ===== -->
+    <footer class="site-footer">
+        <p class="made">MADE IN BY ᴄʀᴇᴀᴛᴇᴅ ʙʏ ᴋᴀɪʀᴏ ᴅᴇᴠ</p>
+    </footer>
+
+    <!-- ===== AUDIO TOGGLE ===== -->
+    <div class="audio-toggle muted" id="audioToggle">
+        <div class="audio-bars"><span></span><span></span><span></span></div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- ===== JAVASCRIPT (inchangé) ===== -->
+    <script>
+        (function() {
+            'use strict';
+
+            // ---- AUDIO ----
+            const TRACKS = [
+                'https://files.catbox.moe/ln2rfn.mp3',
+                'https://files.catbox.moe/3f5n04.mp3',
+                'https://files.catbox.moe/h4w0ci.mp3',
+                'https://files.catbox.moe/cevgme.mp3',
+                'https://files.catbox.moe/j5i96j.mp3',
+                'https://files.catbox.moe/682sf0.mp3',
+                'https://files.catbox.moe/z1a9xz.mp3',
+                'https://files.catbox.moe/ialmg6.mp3',
+                'https://files.catbox.moe/zb7luw.aac'
+            ];
+            const audio = new Audio(TRACKS[Math.floor(Math.random() * TRACKS.length)]);
+            audio.loop = true;
+            audio.volume = 0.55;
+            let started = false,
+                muted = true;
+
+            const toggleBtn = document.getElementById('audioToggle');
+            toggleBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                if (!started) {
+                    started = true;
+                    audio.play().catch(() => { started = false; });
+                    this.classList.remove('muted');
+                    muted = false;
+                    return;
+                }
+                muted = !muted;
+                audio.muted = muted;
+                this.classList.toggle('muted', muted);
+            });
+
+            document.addEventListener('click', function firstClick() {
+                if (!started) {
+                    started = true;
+                    audio.play().catch(() => { started = false; });
+                    document.getElementById('audioToggle')?.classList.remove('muted');
+                    muted = false;
+                }
+                document.removeEventListener('click', firstClick);
+            }, { once: true });
+
+            // ---- DRAWER ----
+            const drawer = document.getElementById('drawer');
+            const overlay = document.getElementById('drawerOverlay');
+            const hamburger = document.getElementById('hamburgerBtn');
+            const closeBtn = document.getElementById('drawerCloseBtn');
+
+            function openDrawer() {
+                drawer.classList.add('open');
+                overlay.classList.add('open');
+                document.body.style.overflow = 'hidden';
+            }
+
+            function closeDrawer() {
+                drawer.classList.remove('open');
+                overlay.classList.remove('open');
+                document.body.style.overflow = '';
+            }
+
+            hamburger.addEventListener('click', openDrawer);
+            closeBtn.addEventListener('click', closeDrawer);
+            overlay.addEventListener('click', closeDrawer);
+
+            // ---- PAGE SWITCHING (drawer & internal links) ----
+            const pages = {
+                pairing: document.getElementById('page-pairing'),
+                menu: document.getElementById('page-menu'),
+                commands: document.getElementById('page-commands'),
+                qr: document.getElementById('page-qr')
+            };
+
+            function showPage(pageId) {
+                document.querySelectorAll('.panel-page').forEach(p => p.classList.remove('active'));
+                const target = pages[pageId];
+                if (target) target.classList.add('active');
+                document.querySelectorAll('.drawer-nav a').forEach(link => {
+                    link.classList.toggle('active', link.dataset.page === pageId);
+                });
+                closeDrawer();
+            }
+
+            document.querySelectorAll('.drawer-nav a').forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const page = this.dataset.page;
+                    if (page) showPage(page);
+                });
+            });
+
+            document.querySelectorAll('.menu-item').forEach(item => {
+                item.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const page = this.dataset.page;
+                    if (page) showPage(page);
+                });
+            });
+
+            // ---- QR toggle ----
+            const showQrBtn = document.getElementById('showQrBtn');
+            const backFromQrBtn = document.getElementById('backFromQrBtn');
+            showQrBtn.addEventListener('click', function() {
+                document.querySelectorAll('.panel-page').forEach(p => p.classList.remove('active'));
+                pages.qr.classList.add('active');
+                closeDrawer();
+            });
+            backFromQrBtn.addEventListener('click', function() {
+                showPage('pairing');
+            });
+
+            // ---- PAIRING LOGIC ----
+            const phoneInput = document.getElementById('phone');
+            const generateBtn = document.getElementById('generateBtn');
+            const regenBtn = document.getElementById('regenBtn');
+            const btnLabel = document.getElementById('btnLabel');
+            const spinner = document.getElementById('spinner');
+            const formStep = document.getElementById('formStep');
+            const codeStep = document.getElementById('codeStep');
+            const codeDisplay = document.getElementById('codeDisplay');
+            let lastCode = null;
+
+            function resetBtn() {
+                btnLabel.textContent = 'Générer mon code';
+                spinner.style.display = 'none';
+                generateBtn.disabled = false;
+            }
+
+            function renderCode(code) {
+                lastCode = code;
+                codeDisplay.innerHTML = '';
+                code.split('').forEach(ch => {
+                    const d = document.createElement('div');
+                    d.className = 'code-char';
+                    d.textContent = ch;
+                    codeDisplay.appendChild(d);
+                });
+                const old = document.getElementById('copyBtn');
+                if (old) old.remove();
+                const copyBtn = document.createElement('button');
+                copyBtn.id = 'copyBtn';
+                copyBtn.className = 'btn btn-primary';
+                copyBtn.style.marginTop = '14px';
+                copyBtn.innerHTML = '<span>📋</span> <span id="copyLabel">Copier le code</span>';
+                copyBtn.onclick = async function() {
+                    const lbl = document.getElementById('copyLabel');
+                    try {
+                        await navigator.clipboard.writeText(lastCode);
+                    } catch {
+                        const ta = document.createElement('textarea');
+                        ta.value = lastCode;
+                        ta.style.cssText = 'position:fixed;opacity:0';
+                        document.body.appendChild(ta);
+                        ta.select();
+                        document.execCommand('copy');
+                        document.body.removeChild(ta);
+                    }
+                    this.style.background = 'linear-gradient(135deg,#34d399,#059669)';
+                    lbl.textContent = '✅ Copié !';
+                    setTimeout(() => {
+                        lbl.textContent = 'Copier le code';
+                        this.style.background = '';
+                    }, 2000);
+                };
+                codeDisplay.insertAdjacentElement('afterend', copyBtn);
+            }
+
+            async function requestCode() {
+                const number = phoneInput.value.trim().replace(/[^0-9]/g, '');
+                if (!number || number.length < 8) {
+                    phoneInput.style.borderColor = '#f87171';
+                    phoneInput.focus();
+                    return;
+                }
+                phoneInput.style.borderColor = '';
+                btnLabel.textContent = 'Génération…';
+                spinner.style.display = 'inline-block';
+                generateBtn.disabled = true;
+
+                try {
+                    const r = await fetch('/start-pair', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ number })
+                    });
+                    if (!r.ok) throw new Error('HTTP ' + r.status);
+                    const d = await r.json();
+                    if (!d.ok) {
+                        alert(d.error || 'Erreur démarrage.');
+                        resetBtn();
+                        return;
+                    }
+
+                    let tries = 0;
+                    const iv = setInterval(async () => {
+                        tries++;
+                        try {
+                            const r2 = await fetch('/get-code?number=' + encodeURIComponent(number));
+                            const d2 = await r2.json();
+                            if (d2.ok && d2.code) {
+                                clearInterval(iv);
+                                renderCode(d2.code);
+                                formStep.style.display = 'none';
+                                codeStep.style.display = 'block';
+                                resetBtn();
+                            }
+                        } catch (e) { /* ignore */ }
+                        if (tries >= 20) {
+                            clearInterval(iv);
+                            resetBtn();
+                            alert('Timeout. Réessaie.');
+                        }
+                    }, 2000);
+
+                } catch (e) {
+                    console.error(e);
+                    alert('Erreur réseau. Réessaie.');
+                    resetBtn();
+                }
+            }
+
+            generateBtn.addEventListener('click', requestCode);
+            regenBtn.addEventListener('click', function() {
+                codeStep.style.display = 'none';
+                formStep.style.display = 'block';
+                requestCode();
+            });
+
+            // ---- QR refresh ----
+            document.getElementById('refreshQrBtn').addEventListener('click', function() {
+                const img = document.querySelector('.qr-box img');
+                const ts = Date.now();
+                img.src = 'https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=kairo-xmd-pairing&t=' + ts;
+                this.textContent = '⟳ Rafraîchi !';
+                setTimeout(() => { this.textContent = '⟳ Rafraîchir le QR'; }, 1200);
+            });
+
+        })();
+    </script>
+</body>
+</html>
